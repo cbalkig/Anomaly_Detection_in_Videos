@@ -17,44 +17,17 @@ class Config:
     DATASET_PATH = os.path.join(working_directory, "UCSD_Anomaly_Dataset.v1p2", "UCSDped1", "Train")
     SINGLE_TEST_PATH = os.path.join(working_directory, "UCSD_Anomaly_Dataset.v1p2", "UCSDped1", "Test", test_folder)
     BATCH_SIZE = 16
-    EPOCHS = 3
+    FRAME_COUNT = 200
     MODEL_PATH = os.path.join(working_directory, "model.hdf5")
 
 
-def get_model(training_set, reload_model=True):
-    if not reload_model:
-        return load_model(Config.MODEL_PATH,custom_objects={'LayerNormalization': LayerNormalization})
-
-    seq = Sequential()
-    seq.add(TimeDistributed(Conv2D(128, (11, 11), strides=4, padding="same"), batch_input_shape=(None, 10, 256, 256, 1)))
-    seq.add(LayerNormalization())
-    seq.add(TimeDistributed(Conv2D(64, (5, 5), strides=2, padding="same")))
-    seq.add(LayerNormalization())
-    # # # # #
-    seq.add(ConvLSTM2D(64, (3, 3), padding="same", return_sequences=True))
-    seq.add(LayerNormalization())
-    seq.add(ConvLSTM2D(32, (3, 3), padding="same", return_sequences=True))
-    seq.add(LayerNormalization())
-    seq.add(ConvLSTM2D(64, (3, 3), padding="same", return_sequences=True))
-    seq.add(LayerNormalization())
-    # # # # #
-    seq.add(TimeDistributed(Conv2DTranspose(64, (5, 5), strides=2, padding="same")))
-    seq.add(LayerNormalization())
-    seq.add(TimeDistributed(Conv2DTranspose(128, (11, 11), strides=4, padding="same")))
-    seq.add(LayerNormalization())
-    seq.add(TimeDistributed(Conv2D(1, (11, 11), activation="sigmoid", padding="same")))
-    print(seq.summary())
-
-    seq.compile(loss='mse', optimizer=keras.optimizers.Adam(lr=1e-4, decay=1e-5, epsilon=1e-6))
-    seq.fit(training_set, training_set,
-            batch_size=Config.BATCH_SIZE, epochs=Config.EPOCHS, shuffle=False)
-    seq.load(Config.MODEL_PATH)
-    return seq
+def get_model():
+    return load_model(Config.MODEL_PATH, custom_objects={'LayerNormalization': LayerNormalization})
 
 
 def get_single_test():
-    sz = 200
-    test = np.zeros(shape=(sz, 256, 256, 1))
+    sz = Config.FRAME_COUNT
+    test = np.zeros(shape=(Config.FRAME_COUNT, 256, 256, 1))
     cnt = 0
     for f in sorted(listdir(Config.SINGLE_TEST_PATH)):
         if str(join(Config.SINGLE_TEST_PATH, f))[-3:] == "tif":
@@ -93,5 +66,5 @@ def evaluate(model):
 
 
 if __name__ == '__main__':
-    model = get_model(None, False)
+    model = get_model()
     evaluate(model)
