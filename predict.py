@@ -88,8 +88,8 @@ def evaluate(model):
     plt.plot(sr)
     plt.ylabel('regularity score Sr(t)')
     plt.xlabel('frame t')
-    plt.show()
     plt.savefig(test_folder + '.png')
+    plt.show()
 
 
 if __name__ == '__main__':
