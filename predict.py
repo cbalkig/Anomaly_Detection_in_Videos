@@ -10,11 +10,12 @@ from keras_layer_normalization import LayerNormalization
 import matplotlib.pyplot as plt
 
 working_directory = '/Users/balki/files/'
+test_folder = "Test014"
 
 
 class Config:
     DATASET_PATH = os.path.join(working_directory, "UCSD_Anomaly_Dataset.v1p2", "UCSDped1", "Train")
-    SINGLE_TEST_PATH = os.path.join(working_directory, "UCSD_Anomaly_Dataset.v1p2", "UCSDped1", "Test", "Test032")
+    SINGLE_TEST_PATH = os.path.join(working_directory, "UCSD_Anomaly_Dataset.v1p2", "UCSDped1", "Test", test_folder)
     BATCH_SIZE = 4
     EPOCHS = 3
     MODEL_PATH = os.path.join(working_directory, "model.hdf5")
@@ -88,6 +89,7 @@ def evaluate(model):
     plt.ylabel('regularity score Sr(t)')
     plt.xlabel('frame t')
     plt.show()
+    plt.savefig(test_folder + '.png')
 
 
 if __name__ == '__main__':
