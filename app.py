@@ -46,7 +46,7 @@ def image():
     image_file = request.files['image']
     uuid = request.form.get('uuid')
     count = request.form.get('count')
-    image_object = Image.open(image_file).convert('LA')
+    image_object = Image.open(image_file).convert('L')
     images_folder = os.path.join(files_folder, uuid)
     if not os.path.exists(images_folder):
         try:
