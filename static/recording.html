@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <title>Anomaly Detector</title>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <style>
+        video {
+            width: 60%;
+            z-index: -1;
+            /* Mirror the local video */
+            transform: scale(-1, 1); /*For Firefox (& IE) */
+            -webkit-transform: scale(-1, 1); /*for Chrome & Opera (& Safari) */
+        }
+
+        canvas {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            z-index: 1
+        }
+
+        .footer {
+            bottom: 0px;
+            position: absolute;
+            width: 100%;
+        }
+
+        .recording {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+<div class="jumbotron jumbotron-fluid">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <button type="button" class="btn btn-success" id="startRecording" style="display: none;">Start Recording</button>
+                <button type="button" class="btn btn-danger" id="stopRecording" style="display: none;">Stop Recording</button>
+                <h3 class="display-5 recording" id="recording" style="display: none;">Recording</h3>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <video id="myVideo" autoplay playsinline></video>
+            </div>
+        </div>
+    </div>
+</div>
+<footer class="text-center text-lg-start footer">
+    <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2)">
+        © 2020 Copyright:
+        <a class="text-dark" href="https://mdbootstrap.com/">C. Balkı GEMİRTER</a>
+    </div>
+</footer>
+<script src="https://code.jquery.com/jquery-3.5.0.js"></script>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+<script src="/static/local.js"></script>
+<script id="anomalyDetector" src="/static/recording.js" data-source="myVideo" data-mirror="true"
+        data-uploadWidth="320" data-scoreThreshold="0.40"></script>
+</body>
+</html>
