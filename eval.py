@@ -9,14 +9,13 @@ from keras.models import Sequential, load_model
 from keras_layer_normalization import LayerNormalization
 import matplotlib.pyplot as plt
 
-working_directory = '/Users/balki/files/my_va'
+working_directory = '/Users/balki/MyProjects/Anomaly_Detection_in_Videos'
 
 
 class Config:
-    SINGLE_TEST_PATH = os.path.join(working_directory, "4f396be3-f840-468d-b0bc-4cdb17a127d8")
+    SINGLE_TEST_PATH = os.path.join(working_directory, "files", "test_a615dbdd-a9bc-4e76-a042-3d157bc87859")
     BATCH_SIZE = 4
-    EPOCHS = 3
-    MODEL_PATH = os.path.join(working_directory, "model.hdf5")
+    MODEL_PATH = os.path.join(working_directory, "model", "model.hdf5")
     FRAME_SIZE = 10
     THRESHOLD = 150
 
@@ -62,14 +61,9 @@ def evaluate(model):
     # get the reconstruction cost of all the sequences
     reconstructed_sequences = model.predict(sequences, batch_size=Config.BATCH_SIZE)
     sequences_reconstruction_cost = np.array([np.linalg.norm(np.subtract(sequences[i],reconstructed_sequences[i])) for i in range(0, sz)])
-    sa = (sequences_reconstruction_cost - np.min(sequences_reconstruction_cost)) / np.max(sequences_reconstruction_cost)
-    sr = 1.0 - sa
+    sr = sequences_reconstruction_cost
 
-    # plot the regularity scores
-    plt.plot(sr)
-    plt.ylabel('regularity score Sr(t)')
-    plt.xlabel('frame t')
-    plt.show()
+    print(sr)
 
 
 if __name__ == '__main__':

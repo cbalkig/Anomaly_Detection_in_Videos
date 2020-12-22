@@ -34,9 +34,10 @@ const apiServer = s.getAttribute("data-apiServer") || window.location.origin;
 
 uuid = uuidv4();
 console.info(uuid);
-count = 0;
+recordingCount = 0;
 recording = null;
 anomalyDetecting = null;
+anomalyDetectingFile = null;
 
 v = document.getElementById(sourceVideo);
 
@@ -53,7 +54,7 @@ function recordFile(file) {
     let formdata = new FormData();
     formdata.append("image", file);
     formdata.append("uuid", uuid);
-    formdata.append("count", ++count);
+    formdata.append("count", ++recordingCount);
 
     let xhr = new XMLHttpRequest();
     xhr.open('POST', apiServer + "/recordingImage", true);
@@ -99,10 +100,79 @@ function anomalyDetectFile(file) {
     formdata.append("uuid", uuid);
 
     let xhr = new XMLHttpRequest();
-    xhr.open('POST', apiServer + "/anomalyDetection", true);
+    xhr.open('POST', apiServer + "/anomalyDetectionFrame", true);
+    xhr.onload = function () {
+        if (this.status === 200) {
+            $('#value').text(this.response)
+            console.info(this.response)
+            $('.progress-bar').attr("aria-valuenow", this.response)
+            $('.progress-bar').attr("style", "width: " + this.response + "%")
+
+            if (Number(this.response) < 40) {
+               $('.progress-bar').removeClass("bg-success bg-warning")
+               $('.progress-bar').addClass("bg-danger")
+            }
+            else if (Number(this.response) >= 80) {
+               $('.progress-bar').removeClass("bg-danger bg-warning")
+               $('.progress-bar').addClass("bg-success")
+            }
+            else {
+               $('.progress-bar').removeClass("bg-success bg-danger")
+               $('.progress-bar').addClass("bg-warning")
+            }
+        }
+        else {
+            console.error(xhr);
+        }
+    };
+    xhr.send(formdata);
+}
+
+function anomalyDetectFile(file) {
+    //Set options as form data
+    let formdata = new FormData();
+    formdata.append("image", file);
+    formdata.append("uuid", uuid);
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('POST', apiServer + "/anomalyDetectionFrame", true);
     xhr.onload = function () {
         if (this.status === 200) {
             console.info(this.response)
+        }
+        else {
+            console.error(xhr);
+        }
+    };
+    xhr.send(formdata);
+}
+
+function doAnomalyDetection() {
+    //Set options as form data
+    let formdata = new FormData();
+    formdata.append("uuid", uuid);
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('POST', apiServer + "/doAnomalyDetection", true);
+    xhr.onload = function () {
+        if (this.status === 200) {
+            $('#value').text(this.response)
+            console.info(this.response)
+            $('.progress-bar').attr("aria-valuenow", this.response)
+            $('.progress-bar').attr("style", "width: " + this.response + "%")
+
+            if (Number(this.response) < 40) {
+               $('.progress-bar').removeClass("bg-success bg-warning")
+               $('.progress-bar').addClass("bg-danger")
+            }
+            else if (Number(this.response) >= 80) {
+               $('.progress-bar').removeClass("bg-danger bg-warning")
+               $('.progress-bar').addClass("bg-success")
+            }
+            else {
+               $('.progress-bar').removeClass("bg-success bg-danger")
+               $('.progress-bar').addClass("bg-warning")
+            }
         }
         else {
             console.error(xhr);
@@ -132,7 +202,7 @@ function startAnomalyDetection() {
 
     //Save and send the first image
     imageCtx.drawImage(v, 0, 0, v.videoWidth, v.videoHeight, 0, 0, uploadWidth, uploadWidth * (v.videoHeight / v.videoWidth));
-    imageCanvas.toBlob(postFile, 'image/tif');
+    imageCanvas.toBlob(anomalyDetectFile, 'image/tif');
 }
 
 $(document).ready(function(){
@@ -146,7 +216,8 @@ $(document).ready(function(){
     $('#anomalyDetection').click(function(){
         uuid = uuidv4();
         console.info(uuid);
-        anomalyDetecting = setInterval(startAnomalyDetection, 50);
+        anomalyDetectingFile = setInterval(startAnomalyDetection, 50);
+        anomalyDetecting = setInterval(doAnomalyDetection, 500);
         $('#progress').show();
         $('#startRecording').hide();
         $('#anomalyDetection').hide();
@@ -160,11 +231,13 @@ $(document).ready(function(){
         $('#stopAnomalyDetection').hide();
         clearInterval(anomalyDetecting);
         anomalyDetecting = null;
+        clearInterval(anomalyDetectingFile);
+        anomalyDetectingFile = null;
     });
 
     $('#startRecording').click(function(){
         uuid = uuidv4();
-        count = 0;
+        recordingCount = 0;
         console.info(uuid);
         recording = setInterval(startRecording, 50);
         $('#stopRecording').show();

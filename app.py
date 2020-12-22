@@ -2,6 +2,7 @@ import os
 from flask import Flask, Response, request
 from PIL import Image
 from predict import get_model, evaluate
+import numpy as np
 
 app = Flask(__name__)
 files_folder = os.path.join(os.getcwd(), "files")
@@ -23,16 +24,29 @@ def index():
     return Response(open('static/index.html').read(), mimetype="text/html")
 
 
-@app.route('/anomalyDetection', methods=['POST'])
+@app.route('/anomalyDetectionFrame', methods=['POST'])
 def anomaly_detection():
     image_file = request.files['image']
     uuid = request.form.get('uuid')
-    image_object = Image.open(image_file).convert('L')
+
     if uuid not in images:
         images[uuid] = []
-    images[uuid].append(image_object)
-    if len(images[uuid]) is 10:
-        evaluate(model, image_object)
+
+    image_object = Image.open(image_file).convert('L')
+    img = image_object.resize((256, 256))
+    img = np.array(img, dtype=np.float32) / 256.0
+    images[uuid].append(img)
+    return "ok"
+
+
+@app.route('/doAnomalyDetection', methods=['POST'])
+def doAnomalyDetection():
+    uuid = request.form.get('uuid')
+    result = "0"
+    if len(images[uuid]) > 10:
+        result = evaluate(model, images[uuid][-9:])
+    print(len(images[uuid]), result)
+    return result
 
 
 @app.route('/recordingImage', methods=['POST'])
@@ -54,5 +68,4 @@ def image():
 
 
 if __name__ == '__main__':
-    #app.run(host="192.168.0.17", port=5000, debug=True)
-    app.run(host="192.168.0.17", port=5000, debug=True, ssl_context=('ssl/server.crt', 'ssl/server.key'))
+    app.run(host="192.168.0.14", port=5000, debug=False, ssl_context=('ssl/server.crt', 'ssl/server.key'))
