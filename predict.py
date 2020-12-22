@@ -64,7 +64,3 @@ def evaluate(model):
     plt.savefig(test_folder + '.png')
     plt.show()
 
-
-if __name__ == '__main__':
-    model = get_model()
-    evaluate(model)

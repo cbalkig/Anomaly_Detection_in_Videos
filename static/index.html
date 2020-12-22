@@ -45,6 +45,19 @@
     <div class="container">
         <div class="row">
             <div class="col-12">
+                <button type="button" class="btn btn-info" id="anomalyDetection" style="display: none;">Anomaly Detection</button>
+                <button type="button" class="btn btn-danger" id="stopAnomalyDetection" style="display: none;">Stop Anomaly Detection</button>
+         </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="progress" id="progress" style="display: none;">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
                 <button type="button" class="btn btn-success" id="startRecording" style="display: none;">Start Recording</button>
                 <button type="button" class="btn btn-danger" id="stopRecording" style="display: none;">Stop Recording</button>
             </div>
@@ -77,8 +90,7 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
         integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
         crossorigin="anonymous"></script>
-<script src="/static/local.js"></script>
-<script id="anomalyDetector" src="/static/recording.js" data-source="myVideo" data-mirror="true"
+<script id="anomalyDetector" src="/static/main.js" data-source="myVideo" data-mirror="true"
         data-uploadWidth="320" data-scoreThreshold="0.40"></script>
 </body>
 </html>

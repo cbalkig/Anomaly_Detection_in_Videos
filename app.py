@@ -1,15 +1,13 @@
 import os
-from flask import Flask, render_template, Response, request
+from flask import Flask, Response, request
 from PIL import Image
+from predict import get_model, evaluate
 
 app = Flask(__name__)
 files_folder = os.path.join(os.getcwd(), "files")
+model = get_model()
 
-
-@app.route('/')
-def index():
-    return render_template('index.html')
-
+images = {}
 
 # for CORS
 @app.after_request
@@ -20,25 +18,21 @@ def after_request(response):
     return response
 
 
-@app.route('/recording')
-def recording():
-    return Response(open('./static/recording.html').read(), mimetype="text/html")
+@app.route('/')
+def index():
+    return Response(open('static/index.html').read(), mimetype="text/html")
 
 
-@app.route('/video')
-def remote():
-    return Response(open('./static/video.html').read(), mimetype="text/html")
-
-
-@app.route('/test')
-def test():
-    PATH_TO_TEST_IMAGES_DIR = 'object_detection/test_images'  # cwh
-    TEST_IMAGE_PATHS = [os.path.join(PATH_TO_TEST_IMAGES_DIR, 'image{}.jpg'.format(i)) for i in range(1, 3)]
-
-    image = Image.open(TEST_IMAGE_PATHS[0])
-    objects = None #object_detection_api.get_objects(image)
-
-    return objects
+@app.route('/anomalyDetection', methods=['POST'])
+def anomaly_detection():
+    image_file = request.files['image']
+    uuid = request.form.get('uuid')
+    image_object = Image.open(image_file).convert('L')
+    if uuid not in images:
+        images[uuid] = []
+    images[uuid].append(image_object)
+    if len(images[uuid]) is 10:
+        evaluate(model, image_object)
 
 
 @app.route('/recordingImage', methods=['POST'])
