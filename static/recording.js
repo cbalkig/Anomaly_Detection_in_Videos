@@ -71,6 +71,9 @@ $(document).ready(function(){
     };
 
     $('#startRecording').click(function(){
+        uuid = uuidv4();
+        count = 0;
+        console.info(uuid);
         recording = setInterval(startAnomalyDetection, 100);
         $('#stopRecording').show();
         $("#recording").show();
