@@ -11,4 +11,4 @@ class Config:
     MODEL_PATH = os.path.join(working_directory, "model.hdf5")
     MODEL_WEIGHTS_PATH = os.path.join(working_directory, "weights_MLP.h5")
     IMAGE_SIZE = 256
-    NUM_THREADS = 100
+    NUM_THREADS = 150
