@@ -47,4 +47,4 @@ def image():
 
 
 if __name__ == '__main__':
-    app.run(host="192.168.0.14", port=5000, debug=False, ssl_context=('ssl/server.crt', 'ssl/server.key'))
+    app.run(host="192.168.0.14", port=9000, debug=False, ssl_context=('ssl/server.crt', 'ssl/server.key'))

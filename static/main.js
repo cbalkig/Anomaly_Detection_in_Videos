@@ -37,6 +37,7 @@ console.info(uuid);
 recordingCount = 0;
 recording = null;
 anomalyDetecting = null;
+anomalyCount = 0;
 
 v = document.getElementById(sourceVideo);
 
@@ -104,20 +105,16 @@ function doAnomalyDetection(file) {
     xhr.onload = function () {
         if (this.status === 200) {
             console.info(this.response)
-            $('.progress-bar').attr("aria-valuenow", this.response)
-            $('.progress-bar').attr("style", "width: " + this.response + "%")
-
-            if (Number(this.response) < 40) {
-               $('.progress-bar').removeClass("bg-success bg-warning")
-               $('.progress-bar').addClass("bg-danger")
+            if (!anomalyDetecting) {
+                $("#abnormal").hide();
+                return
             }
-            else if (Number(this.response) >= 80) {
-               $('.progress-bar').removeClass("bg-danger bg-warning")
-               $('.progress-bar').addClass("bg-success")
+
+            if ("1" === this.response) {
+                $("#abnormal").show();
             }
             else {
-               $('.progress-bar').removeClass("bg-success bg-danger")
-               $('.progress-bar').addClass("bg-warning")
+                $("#abnormal").hide();
             }
         }
         else {
@@ -160,17 +157,15 @@ $(document).ready(function(){
     };
 
     $('#anomalyDetection').click(function(){
-        uuid = uuidv4();
-        console.info(uuid);
-        anomalyDetecting = setInterval(startAnomalyDetection, 50);
-        $('#progress').show();
+        anomalyCount = 0;
+        anomalyDetecting = setInterval(startAnomalyDetection, 100);
         $('#startRecording').hide();
         $('#anomalyDetection').hide();
         $('#stopAnomalyDetection').show();
     });
 
     $('#stopAnomalyDetection').click(function(){
-        $('#progress').hide();
+        $("#abnormal").hide();
         $('#startRecording').show();
         $('#anomalyDetection').show();
         $('#stopAnomalyDetection').hide();

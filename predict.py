@@ -24,4 +24,4 @@ def evaluate(model, img):
     frame = np.array(frame)
     frame = np.reshape(frame, (1,) + frame.shape)
     prediction = model.predict(frame)
-    return str(np.max(prediction) * 100)
+    return str(int(prediction[0][0]))
