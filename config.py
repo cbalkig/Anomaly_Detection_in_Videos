@@ -9,6 +9,5 @@ class Config:
     BATCH_SIZE = 128
     EPOCHS = 10
     MODEL_PATH = os.path.join(working_directory, "model.hdf5")
-    MODEL_WEIGHTS_PATH = os.path.join(working_directory, "weights_MLP.h5")
     IMAGE_SIZE = 256
-    NUM_THREADS = 150
+    NUM_THREADS = 50
