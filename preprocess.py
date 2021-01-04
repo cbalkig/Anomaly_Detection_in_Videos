@@ -1,10 +1,21 @@
 import os
 import time
-import concurrent.futures
 from config import Config
 import uuid
 from PIL import Image
 import matplotlib.pyplot as plt
+import multiprocessing as mp
+import pandas as pd
+import numpy as np
+print(mp.cpu_count())
+
+working_directory = "."
+
+
+class Config:
+    DATASET_PATH = os.path.join(working_directory, "files")
+    EDIT_DATASET_PATH = os.path.join(working_directory, "regenerated_files")
+    THREAD_COUNT = mp.cpu_count()
 
 
 def tree(folder, max_items=10000000):
@@ -36,7 +47,10 @@ def save_image(image_class, img_file_name, img):
     img.save(img_file)
 
 
-def preprocess_image(sub_directory_path, file_name, class_name):
+def preprocess_image(data):
+    sub_directory_path = data[0]
+    file_name = data[1]
+    class_name = data[2]
     img_path = os.path.join(sub_directory_path, file_name)
     if str(img_path)[-3:] == "tif":
         try:
@@ -49,24 +63,31 @@ def preprocess_image(sub_directory_path, file_name, class_name):
 
 
 def preprocess_images():
-    start_time = time.time()
-    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-        futures = []
-        for f in sorted(os.listdir(Config.DATASET_PATH)):
-            directory_path = os.path.join(Config.DATASET_PATH, f)
-            if os.path.isdir(directory_path):
-                class_name = f
-                for v in sorted(os.listdir(directory_path)):
-                    sub_directory_path = os.path.join(directory_path, v)
-                    #print("Processing", sub_directory_path)
-                    for c in sorted(os.listdir(sub_directory_path)):
-                        futures.append(
-                            executor.submit(
-                                preprocess_image, sub_directory_path=sub_directory_path, file_name=c,
-                                class_name=class_name
-                            )
-                        )
-    print("Execution time:", time.time() - start_time, "seconds.")
+    data = []
+    for f in sorted(os.listdir(Config.DATASET_PATH)):
+        directory_path = os.path.join(Config.DATASET_PATH, f)
+        if os.path.isdir(directory_path):
+            class_name = f
+            for v in sorted(os.listdir(directory_path)):
+                sub_directory_path = os.path.join(directory_path, v)
+                for c in sorted(os.listdir(sub_directory_path)):
+                    data.append([sub_directory_path, c, class_name])
+    df = pd.DataFrame(data=data, columns=['directory_path', 'file_name', 'label'])
+    sample_count = df.size
+    slider = int(sample_count / Config.THREAD_COUNT)
+
+    sliders = []
+    for i in range(Config.THREAD_COUNT):
+        sliders.append(i * slider)
+    sliders.append(sample_count)
+
+    print("Sliders", sliders)
+
+    df = df.iloc[np.random.permutation(len(df))]
+
+    dfs = []
+    for i in range(Config.THREAD_COUNT):
+        dfs.append(df.iloc[sliders[i]:sliders[i + 1] - 1])
 
 
 def get_stats():
@@ -97,7 +118,9 @@ def get_stats():
     print("Total Samples Count:", total_samples_count)
 
 
+start_time = time.time()
 tree(Config.DATASET_PATH, max_items=3)
 preprocess_images()
 tree(Config.EDIT_DATASET_PATH, max_items=3)
 get_stats()
+print("Execution time:", time.time() - start_time, "seconds.")
