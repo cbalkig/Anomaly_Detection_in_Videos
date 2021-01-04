@@ -9,10 +9,12 @@ import pandas as pd
 import numpy as np
 print(mp.cpu_count())
 
-working_directory = "."
 
+working_directory = "."
+processes = {}
 
 class Config:
+    IMAGE_SIZE = 256
     DATASET_PATH = os.path.join(working_directory, "files")
     EDIT_DATASET_PATH = os.path.join(working_directory, "regenerated_files")
     THREAD_COUNT = mp.cpu_count()
@@ -48,18 +50,19 @@ def save_image(image_class, img_file_name, img):
 
 
 def preprocess_image(data):
-    sub_directory_path = data[0]
-    file_name = data[1]
-    class_name = data[2]
-    img_path = os.path.join(sub_directory_path, file_name)
-    if str(img_path)[-3:] == "tif":
-        try:
-            img = Image.open(img_path)
-            img = img.resize((Config.IMAGE_SIZE, Config.IMAGE_SIZE))
-            new_file_name = str(uuid.uuid4()) + ".tif"
-            save_image(class_name, new_file_name, img)
-        except:
-            print("Problem on file", img_path)
+    for item in data.values.tolist():
+        sub_directory_path = item[0]
+        file_name = item[1]
+        class_name = item[2]
+        img_path = os.path.join(sub_directory_path, file_name)
+        if str(img_path)[-3:] == "tif":
+            try:
+                img = Image.open(img_path)
+                img = img.resize((Config.IMAGE_SIZE, Config.IMAGE_SIZE))
+                new_file_name = str(uuid.uuid4()) + ".tif"
+                save_image(class_name, new_file_name, img)
+            except:
+                print("Problem on file", img_path)
 
 
 def preprocess_images():
@@ -72,8 +75,9 @@ def preprocess_images():
                 sub_directory_path = os.path.join(directory_path, v)
                 for c in sorted(os.listdir(sub_directory_path)):
                     data.append([sub_directory_path, c, class_name])
+
     df = pd.DataFrame(data=data, columns=['directory_path', 'file_name', 'label'])
-    sample_count = df.size
+    sample_count = len(df)
     slider = int(sample_count / Config.THREAD_COUNT)
 
     sliders = []
@@ -88,6 +92,23 @@ def preprocess_images():
     dfs = []
     for i in range(Config.THREAD_COUNT):
         dfs.append(df.iloc[sliders[i]:sliders[i + 1] - 1])
+
+    for i in range(Config.THREAD_COUNT):
+        print('registering process %d' % i)
+        proc = mp.Process(target=preprocess_image, args=(dfs[i],))
+        processes[i] = proc
+        proc.start()
+
+    while (True):
+        finished_count = 0
+        for id in processes.keys():
+            if not processes[id].is_alive():
+                finished_count = finished_count + 1
+
+        if finished_count == Config.THREAD_COUNT:
+            break
+        else:
+            time.sleep(5)
 
 
 def get_stats():
@@ -118,9 +139,10 @@ def get_stats():
     print("Total Samples Count:", total_samples_count)
 
 
-start_time = time.time()
-tree(Config.DATASET_PATH, max_items=3)
-preprocess_images()
-tree(Config.EDIT_DATASET_PATH, max_items=3)
-get_stats()
-print("Execution time:", time.time() - start_time, "seconds.")
+if __name__ == '__main__':
+    start_time = time.time()
+    tree(Config.DATASET_PATH, max_items=3)
+    preprocess_images()
+    tree(Config.EDIT_DATASET_PATH, max_items=3)
+    get_stats()
+    print("Execution time:", time.time() - start_time, "seconds.")
